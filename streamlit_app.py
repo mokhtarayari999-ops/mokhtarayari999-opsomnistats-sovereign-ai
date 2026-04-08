@@ -2,115 +2,85 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# 1. إعدادات الصفحة والواجهة الفاخرة
-st.set_page_config(page_title="Arabic Pro | التوقعات الذهبية", page_icon="⚽", layout="wide")
+# 1. إعداد الصفحة والسمة الاحترافية (Black & Gold)
+st.set_page_config(page_title="Arabic Pro | محلل المباريات الشامل", layout="wide")
 
-# 2. تصميم CSS (الأسود والذهبي) مع دعم RTL
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
-    
-    /* الخلفية والنصوص الأساسية */
-    .stApp {
-        background-color: #0e1117;
-        color: #e5e5e5;
-        font-family: 'Cairo', sans-serif;
-        direction: RTL;
-        text-align: right;
+    .stApp { background-color: #000000; color: #ffffff; font-family: 'Cairo', sans-serif; direction: RTL; text-align: right; }
+    h1, h2, h3 { color: #D4AF37 !important; text-align: center; }
+    .stSlider [data-baseweb="slider"] { color: #D4AF37; }
+    .stButton>button { 
+        background-color: #D4AF37; color: black; font-weight: bold; 
+        border-radius: 20px; width: 100%; border: none; height: 3em;
     }
-    
-    /* العناوين باللون الذهبي */
-    h1, h2, h3, .stMetric label {
-        color: #D4AF37 !important;
-        text-shadow: 2px 2px 4px #000000;
-    }
-    
-    /* تنسيق الأزرار الذهبية */
-    .stButton>button {
-        background-color: #D4AF37;
-        color: #000;
-        border-radius: 10px;
-        font-weight: bold;
-        border: 1px solid #D4AF37;
-        width: 100%;
-    }
-    .stButton>button:hover {
-        background-color: #B8860B;
-        color: white;
-    }
-    
-    /* تنسيق المدخلات */
-    input, .stSelectbox, .stNumberInput {
-        background-color: #1a1c23 !important;
-        color: #D4AF37 !important;
-        border: 1px solid #D4AF37 !important;
-    }
+    div[data-testid="stMetric"] { background-color: #1a1a1a; border: 1px solid #D4AF37; padding: 15px; border-radius: 15px; }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. العنوان الرئيسي
-st.title("🏆 ARABIC PRO | محلل التوقعات الذهبي")
+st.title("🏆 ARABIC PRO: نظام التوقيع والتحليل اليدوي")
+
+# 2. تهيئة سجل النتائج (History)
+if "match_history" not in st.session_state:
+    st.session_state.match_history = []
+
+# 3. واجهة الإدخال اليدوي المفصلة
+st.subheader("📝 إدخال بيانات المباراة يدوياً")
+col_h, col_a = st.columns(2)
+
+with col_h:
+    st.markdown("<h3 style='color:white;'>🏠 الفريق المضيف</h3>", unsafe_allow_html=True)
+    home_name = st.text_input("اسم الفريق المضيف", "الأهلي")
+    h_attack = st.slider("قوة الهجوم (المضيف)", 0, 100, 75)
+    h_defense = st.slider("قوة الدفاع (المضيف)", 0, 100, 70)
+    h_mid = st.slider("قوة خط الوسط (المضيف)", 0, 100, 65)
+
+with col_a:
+    st.markdown("<h3 style='color:white;'>✈️ الفريق الضيف</h3>", unsafe_allow_html=True)
+    away_name = st.text_input("اسم الفريق الضيف", "الزمالك")
+    a_attack = st.slider("قوة الهجوم (الضيف)", 0, 100, 70)
+    a_defense = st.slider("قوة الدفاع (الضيف)", 0, 100, 75)
+    a_mid = st.slider("قوة خط الوسط (الضيف)", 0, 100, 60)
+
+# 4. محرك التحليل (Logic)
 st.write("---")
-
-# 4. تهيئة سجل النتائج في ذاكرة المتصفح
-if "history" not in st.session_state:
-    st.session_state.history = []
-
-# 5. منطقة إدخال بيانات المباراة
-col1, col2 = st.columns(2)
-
-with col1:
-    st.markdown("### 🏠 الفريق المضيف")
-    home_team = st.text_input("اسم الفريق", "ريال مدريد")
-    home_power = st.slider("قوة الهجوم (%)", 0, 100, 85, key="h_p")
-
-with col2:
-    st.markdown("### ✈️ الفريق الضيف")
-    away_team = st.text_input("اسم الفريق ", "برشلونة")
-    away_power = st.slider("قوة الدفاع (%)", 0, 100, 75, key="a_p")
-
-# 6. منطق التوقع وعرض النتيجة
-if st.button("✨ تشغيل التحليل الذهبي"):
-    # حساب احتمالية بسيطة (خوارزمية Arabic Pro)
-    total_power = home_power + away_power
-    win_prob = round((home_power / total_power) * 100, 1)
-    loss_prob = round(100 - win_prob, 1)
+if st.button("✨ تنفيذ التحليل العميق"):
+    # حساب القوة الإجمالية بناءً على الهجوم والدفاع والوسط
+    home_total = (h_attack * 0.4) + (h_defense * 0.3) + (h_mid * 0.3) + 5  # +5 ميزة الأرض
+    away_total = (a_attack * 0.4) + (a_defense * 0.3) + (a_mid * 0.3)
     
-    # النتيجة المتوقعة (عشوائية ذكية بناءً على القوة)
-    predicted_score = f"{random.randint(1,3)} - {random.randint(0,2)}" if win_prob > 50 else f"{random.randint(0,2)} - {random.randint(1,3)}"
+    total = home_total + away_total
+    win_p = round((home_total / total) * 100, 1)
+    loss_p = round(100 - win_p, 1)
     
-    # عرض النتائج في بطاقات ذهبية
-    st.markdown("---")
+    # عرض النتائج في البطاقات الذهبية
     c1, c2, c3 = st.columns(3)
-    c1.metric("احتمالية الفوز", f"{win_prob}%")
-    c2.metric("النتيجة المتوقعة", predicted_score)
-    c3.metric("احتمالية الخسارة", f"{loss_prob}%")
+    with c1: st.metric(label="فرصة فوز " + home_name, value=f"{win_p}%")
+    with c2: st.metric(label="النتيجة المتوقعة", value=f"{int(h_attack/30)}-{int(a_attack/35)}")
+    with c3: st.metric(label="فرصة فوز " + away_name, value=f"{loss_p}%")
     
-    # 7. إضافة النتيجة إلى سجل النتائج
-    new_entry = {
-        "التاريخ": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "المباراة": f"{home_team} vs {away_team}",
-        "التوقع": predicted_score,
-        "نسبة الفوز": f"{win_prob}%"
-    }
-    st.session_state.history.insert(0, new_entry)
+    # إضافة النتيجة للسجل
+    st.session_state.match_history.append({
+        "الوقت": datetime.now().strftime("%H:%M:%S"),
+        "المباراة": f"{home_name} vs {away_name}",
+        "التوقع": f"{int(h_attack/30)}-{int(a_attack/35)}",
+        "الأفضلية": home_name if win_p > loss_p else away_name
+    })
 
-# 8. سجل النتائج (History Log)
+# 5. سجل النتائج (كل ما بنيناه سوياً)
 st.write("---")
-st.subheader("📜 سجل نتائج التحليلات السابقة")
-if st.session_state.history:
-    df = pd.DataFrame(st.session_state.history)
+st.subheader("📜 سجل نتائج التحليلات")
+if st.session_state.match_history:
+    df = pd.DataFrame(st.session_state.match_history)
     st.table(df)
 else:
-    st.info("لا يوجد نتائج مسجلة بعد. ابدأ أول تحليل الآن!")
+    st.info("السجل فارغ حالياً، ابدأ بإدخال بيانات أول مباراة.")
 
-# 9. التذييل
-st.sidebar.markdown("<h2 style='color:#D4AF37;'>ARABIC PRO</h2>", unsafe_allow_html=True)
-st.sidebar.info("نظام التحليل السيادي للمباريات - الإصدار الذهبي 2024")
-if st.sidebar.button("🗑️ مسح السجل"):
-    st.session_state.history = []
+# الجانب الجانبي (Sidebar)
+st.sidebar.markdown("<h2 style='color:#D4AF37;'>ARABIC PRO AI</h2>", unsafe_allow_html=True)
+st.sidebar.write("نظام تحليل سيادي خاص")
+if st.sidebar.button("🗑️ تفريغ السجل"):
+    st.session_state.match_history = []
     st.rerun()
-
-st.divider()
-st.caption("تم التطوير بواسطة شريكك في البرمجة - Arabic Pro Sovereign Team")
     
