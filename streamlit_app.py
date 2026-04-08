@@ -7,7 +7,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 2. حقن كود CSS لتنسيق الواجهة من اليمين لليار (RTL) وتحسين الخطوط
+# 2. كود CSS لتنسيق الواجهة من اليمين لليار (RTL) وتحسين الخطوط العربية
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
@@ -24,48 +24,51 @@ st.markdown("""
         direction: RTL;
     }
     
-    /* تنسيق الأزرار والقوائم */
-    .stButton>button {
-        width: 100%;
-        border-radius: 10px;
+    /* تنسيق الرسائل (User vs Assistant) */
+    .stChatMessage {
+        direction: RTL;
+        text-align: right;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. العنوان والوصف الرئيسي
+# 3. واجهة المستخدم الرئيسية للمشروع
 st.title("🤖 مشروع Arabic Pro")
-st.write("مرحباً بك في واجهة **Sovereign AI** المتطورة. لنبدأ بناء المستقبل!")
+st.markdown("### مرحباً بك في واجهة **Sovereign AI** المتقدمة")
+st.write("لنقم ببناء الذكاء الاصطناعي السيادي باللغة العربية معاً!")
 
-# 4. إدارة نظام الذاكرة للمحادثة (Session State)
+# 4. نظام ذاكرة المحادثة (Session State)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 5. عرض سجل المحادثة السابقة
+# عرض سجل المحادثة
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 6. منطق إدخال المستخدم ومعالجة الرد الذكي
-if prompt := st.chat_input("أدخل سؤالك هنا يا شريكي..."):
-    # إضافة رسالة المستخدم للسجل
+# 5. منطقة إدخال المستخدم ومعالجة الردود
+if prompt := st.chat_input("أدخل طلبك هنا يا شريكي..."):
+    # إضافة رسالة المستخدم للسجل وعرضها
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # إنشاء رد تجريبي (يمكنك هنا ربط API الخاص بـ OpenAI أو Gemini)
+    # رد تجريبي (يمكنك ربط أي نموذج ذكاء اصطناعي هنا)
     with st.chat_message("assistant"):
-        response = f"أنا رهن إشارتك في مشروع Arabic Pro. لقد استلمت طلبك: '{prompt}'"
+        response = f"أنا رهن إشارتك في مشروع Arabic Pro. لقد تلقيت رسالتك: '{prompt}'"
         st.markdown(response)
     
     # حفظ رد المساعد في السجل
     st.session_state.messages.append({"role": "assistant", "content": response})
 
-# 7. التذييل (Footer) لمعلومات المشروع
-st.sidebar.title("إعدادات Arabic Pro")
-st.sidebar.info("هذا المشروع يهدف لتمكين اللغة العربية في نماذج الذكاء الاصطناعي السيادي.")
-if st.sidebar.button("مسح سجل المحادثة"):
-    st.session_state.messages = []
-    st.rerun()
+# 6. الشريط الجانبي للإعدادات
+with st.sidebar:
+    st.title("⚙️ إعدادات المشروع")
+    st.info("Arabic Pro: مشروع يهدف لتمكين اللغة العربية برمجياً.")
+    if st.button("مسح سجل المحادثة"):
+        st.session_state.messages = []
+        st.rerun()
 
 st.divider()
 st.caption("تم التطوير بواسطة فريق Arabic Pro - Sovereign AI © 2024")
+        
