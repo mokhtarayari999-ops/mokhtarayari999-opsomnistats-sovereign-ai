@@ -1,72 +1,116 @@
 import streamlit as st
-import random
+import pandas as pd
+from datetime import datetime
 
-# 1. إعدادات الصفحة والعنوان
-st.set_page_config(page_title="Arabic Pro | تحليل المباريات", page_icon="⚽", layout="wide")
+# 1. إعدادات الصفحة والواجهة الفاخرة
+st.set_page_config(page_title="Arabic Pro | التوقعات الذهبية", page_icon="⚽", layout="wide")
 
-# 2. تنسيق الواجهة للعربية (RTL)
+# 2. تصميم CSS (الأسود والذهبي) مع دعم RTL
 st.markdown("""
     <style>
     @import url('https://googleapis.com');
-    html, body, [class*="css"] {
+    
+    /* الخلفية والنصوص الأساسية */
+    .stApp {
+        background-color: #0e1117;
+        color: #e5e5e5;
         font-family: 'Cairo', sans-serif;
-        direction: RTL; text-align: right;
+        direction: RTL;
+        text-align: right;
     }
-    .stNumberInput, .stSelectbox { direction: RTL; }
+    
+    /* العناوين باللون الذهبي */
+    h1, h2, h3, .stMetric label {
+        color: #D4AF37 !important;
+        text-shadow: 2px 2px 4px #000000;
+    }
+    
+    /* تنسيق الأزرار الذهبية */
+    .stButton>button {
+        background-color: #D4AF37;
+        color: #000;
+        border-radius: 10px;
+        font-weight: bold;
+        border: 1px solid #D4AF37;
+        width: 100%;
+    }
+    .stButton>button:hover {
+        background-color: #B8860B;
+        color: white;
+    }
+    
+    /* تنسيق المدخلات */
+    input, .stSelectbox, .stNumberInput {
+        background-color: #1a1c23 !important;
+        color: #D4AF37 !important;
+        border: 1px solid #D4AF37 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("⚽ محلل المباريات الذكي - Arabic Pro")
-st.write("أهلاً بك في نظام التوقع السيادي للمباريات (Sovereign Predictor)")
+# 3. العنوان الرئيسي
+st.title("🏆 ARABIC PRO | محلل التوقعات الذهبي")
+st.write("---")
 
-# 3. مدخلات المباراة
+# 4. تهيئة سجل النتائج في ذاكرة المتصفح
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+# 5. منطقة إدخال بيانات المباراة
 col1, col2 = st.columns(2)
 
 with col1:
-    home_team = st.text_input("الفريق المضيف", "الأهلي")
-    home_rank = st.number_input("ترتيب المضيف في الدوري", min_value=1, value=1)
-    home_form = st.slider("مستوى الفريق المضيف (آخر 5 مباريات)", 0, 100, 70)
+    st.markdown("### 🏠 الفريق المضيف")
+    home_team = st.text_input("اسم الفريق", "ريال مدريد")
+    home_power = st.slider("قوة الهجوم (%)", 0, 100, 85, key="h_p")
 
 with col2:
-    away_team = st.text_input("الفريق الضيف", "الزمالك")
-    away_rank = st.number_input("ترتيب الضيف في الدوري", min_value=1, value=2)
-    away_form = st.slider("مستوى الفريق الضيف (آخر 5 مباريات)", 0, 100, 65)
+    st.markdown("### ✈️ الفريق الضيف")
+    away_team = st.text_input("اسم الفريق ", "برشلونة")
+    away_power = st.slider("قوة الدفاع (%)", 0, 100, 75, key="a_p")
 
-# 4. منطق التحليل (الخوارزمية البسيطة)
+# 6. منطق التوقع وعرض النتيجة
+if st.button("✨ تشغيل التحليل الذهبي"):
+    # حساب احتمالية بسيطة (خوارزمية Arabic Pro)
+    total_power = home_power + away_power
+    win_prob = round((home_power / total_power) * 100, 1)
+    loss_prob = round(100 - win_prob, 1)
+    
+    # النتيجة المتوقعة (عشوائية ذكية بناءً على القوة)
+    predicted_score = f"{random.randint(1,3)} - {random.randint(0,2)}" if win_prob > 50 else f"{random.randint(0,2)} - {random.randint(1,3)}"
+    
+    # عرض النتائج في بطاقات ذهبية
+    st.markdown("---")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("احتمالية الفوز", f"{win_prob}%")
+    c2.metric("النتيجة المتوقعة", predicted_score)
+    c3.metric("احتمالية الخسارة", f"{loss_prob}%")
+    
+    # 7. إضافة النتيجة إلى سجل النتائج
+    new_entry = {
+        "التاريخ": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "المباراة": f"{home_team} vs {away_team}",
+        "التوقع": predicted_score,
+        "نسبة الفوز": f"{win_prob}%"
+    }
+    st.session_state.history.insert(0, new_entry)
+
+# 8. سجل النتائج (History Log)
+st.write("---")
+st.subheader("📜 سجل نتائج التحليلات السابقة")
+if st.session_state.history:
+    df = pd.DataFrame(st.session_state.history)
+    st.table(df)
+else:
+    st.info("لا يوجد نتائج مسجلة بعد. ابدأ أول تحليل الآن!")
+
+# 9. التذييل
+st.sidebar.markdown("<h2 style='color:#D4AF37;'>ARABIC PRO</h2>", unsafe_allow_html=True)
+st.sidebar.info("نظام التحليل السيادي للمباريات - الإصدار الذهبي 2024")
+if st.sidebar.button("🗑️ مسح السجل"):
+    st.session_state.history = []
+    st.rerun()
+
 st.divider()
-if st.button("تحليل المباراة وإظهار التوقعات"):
-    with st.spinner('جاري تحليل البيانات الإحصائية...'):
-        # معادلة بسيطة للتوقع (يمكن تطويرها بربطها بـ AI حقيقي)
-        score_home = (100 - home_rank) + (home_form * 0.5) + 10 # 10 نقاط عامل الأرض
-        score_away = (100 - away_rank) + (away_form * 0.5)
-        
-        total = score_home + score_away
-        win_prob = round((score_home / total) * 100, 1)
-        draw_prob = 25 # نسبة افتراضية للتعادل
-        loss_prob = round(100 - win_prob - draw_prob, 1)
-
-        # 5. عرض النتائج
-        st.subheader(f"📊 نتائج التحليل: {home_team} vs {away_team}")
-        
-        c1, c2, c3 = st.columns(3)
-        c1.metric("فوز " + home_team, f"{win_prob}%")
-        c2.metric("تعادل", f"{draw_prob}%")
-        c3.metric("فوز " + away_team, f"{loss_prob}%")
-
-        # نصيحة المحلل
-        if win_prob > 50:
-            st.success(f"💡 نصيحة Arabic Pro: الأفضلية تميل لـ {home_team} بناءً على الترتيب وعامل الأرض.")
-        elif loss_prob > 50:
-            st.success(f"💡 نصيحة Arabic Pro: {away_team} يمتلك فرصة قوية جداً للفوز خارج دياره.")
-        else:
-            st.warning("💡 نصيحة Arabic Pro: المباراة متكافئة جداً، قد تنتهي بالتعادل.")
-
-# 6. قسم التاريخ والإحصائيات
-st.sidebar.header("إعدادات المحلل")
-st.sidebar.info("هذا النظام يستخدم خوارزميات Arabic Pro لتحليل أداء الفرق.")
-if st.sidebar.checkbox("عرض إحصائيات متقدمة"):
-    st.sidebar.write("قوة الهجوم: 85% | قوة الدفاع: 70%")
-
-st.divider()
-st.caption("حقوق الطبع محفوظة - فريق Arabic Pro الرياضي 2024")
-        
+st.caption("تم التطوير بواسطة شريكك في البرمجة - Arabic Pro Sovereign Team")
+    
